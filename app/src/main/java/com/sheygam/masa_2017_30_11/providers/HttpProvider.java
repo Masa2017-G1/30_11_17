@@ -159,4 +159,32 @@ public class HttpProvider {
     private void newCall(Request request, Callback callback){
         client.newCall(request).enqueue(callback);
     }
+
+    public String getContactsUrlCon(String token) throws Exception {
+        URL url = new URL(BASE_URL+"/contactsarray");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(15000);
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Authorization",token);
+        connection.setRequestProperty("Content-Type", "application/json");
+
+        connection.connect();
+
+        if(connection.getResponseCode() < 400){
+            int size = Integer.parseInt(connection.getHeaderField("Content-length"));
+            String line ;
+            String result = "";
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            while((line = br.readLine())!=null){
+                result += line;
+            }
+            return result;
+        }else if(connection.getResponseCode() == 401){
+            throw new Exception("Authorization error!");
+        }else{
+            throw new Exception("Server error! Call to support!");
+        }
+
+    }
 }
