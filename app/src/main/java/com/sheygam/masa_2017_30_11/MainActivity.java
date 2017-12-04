@@ -1,5 +1,6 @@
 package com.sheygam.masa_2017_30_11;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -101,7 +102,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void run() {
                             showProgress(false);
                             Toast.makeText(MainActivity.this, "Login OK!", Toast.LENGTH_SHORT).show();
-                            //Todo start next activity
+//                            startActivity(new Intent(MainActivity.this,ListActivity.class));
+                            startActivity(new Intent(MainActivity.this,ListActivitySync.class));
                         }
                     });
                 }else if(response.code() == 401){
@@ -133,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     class RegistrationTask extends AsyncTask<Void,Void,String>{
         private Auth auth;
+        private boolean isRegistration = true;
 
         @Override
         protected void onPreExecute() {
@@ -155,8 +158,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }catch (IOException ex){
                 ex.printStackTrace();
                 result = "Connection error! Check your internet!";
+                isRegistration = false;
             }catch (Exception ex){
                 result = ex.getMessage();
+                isRegistration = false;
             }
             return result;
         }
@@ -166,13 +171,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onPostExecute(s);
             Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
             showProgress(false);
-            //ToDo Start next Activity
+
+            if(isRegistration){
+//                startActivity(new Intent(MainActivity.this,ListActivity.class));
+                startActivity(new Intent(MainActivity.this,ListActivitySync.class));
+            }
         }
     }
 
     class LoginTask extends AsyncTask<Void,Void,String>{
         private Auth auth;
-
+        private boolean isRegistration = true;
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -194,9 +203,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }catch (IOException ex){
                 ex.printStackTrace();
                 result = "Connection error! Check your internet";
+                isRegistration = false;
             }catch (Exception ex){
                 result = ex.getMessage();
-
+                isRegistration = false;
             }
             return result;
         }
@@ -206,7 +216,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             super.onPostExecute(s);
             Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
             showProgress(false);
-            //ToDo start next Activity
+            if(isRegistration){
+//                startActivity(new Intent(MainActivity.this,ListActivity.class));
+                startActivity(new Intent(MainActivity.this,ListActivitySync.class));
+            }
         }
     }
 }

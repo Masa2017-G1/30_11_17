@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.sheygam.masa_2017_30_11.models.Auth;
+import com.sheygam.masa_2017_30_11.models.Contact;
+import com.sheygam.masa_2017_30_11.models.Contacts;
 import com.sheygam.masa_2017_30_11.models.Token;
 
 import java.io.BufferedReader;
@@ -15,8 +17,10 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,12 +37,19 @@ public class HttpProvider {
     private static final HttpProvider ourInstance = new HttpProvider();
 
     private Gson gson;
+    private OkHttpClient client;
+    private MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public static HttpProvider getInstance() {
         return ourInstance;
+
     }
 
     private HttpProvider() {
         gson = new Gson();
+        client = new OkHttpClient.Builder()
+                .readTimeout(15,TimeUnit.SECONDS)
+                .connectTimeout(15,TimeUnit.SECONDS)
+                .build();
     }
 
 
@@ -116,5 +127,36 @@ public class HttpProvider {
             Log.d(TAG, "login: error: " + response.body().string());
             throw new Exception("Server error! Call to support");
         }
+    }
+
+    public ArrayList<Contact> getContacts(String token) throws Exception {
+        Request request = new Request.Builder()
+                .url(BASE_URL+"/contactsarray")
+                .addHeader("Authorization",token)
+                .build();
+        Response response = client.newCall(request).execute();
+        if(response.code() < 400){
+            String data = response.body().string();
+            Log.d(TAG, "getContacts: " + data);
+            Contacts contacts = gson.fromJson(data,Contacts.class);
+            return contacts.getContacts();
+        }else if(response.code() == 401){
+            throw new Exception("Authorization error!");
+        }else{
+            Log.d(TAG, "getContacts: " + response.body().string());
+            throw new Exception("Server error! Call to support!");
+        }
+    }
+
+    public void getContacts(String token, Callback callback){
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/contactsarray")
+                .addHeader("Authorization",token)
+                .build();
+        newCall(request,callback);
+    }
+
+    private void newCall(Request request, Callback callback){
+        client.newCall(request).enqueue(callback);
     }
 }
